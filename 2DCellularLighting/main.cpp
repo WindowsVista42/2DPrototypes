@@ -164,6 +164,13 @@ char print_brightness(int c, int x, int y) {
 }
 
 void print_all() {
+  printf(
+      " Lighting                                                       "
+      "|"
+      " Walls                                                           "
+      "|"
+      " Fog\n");
+
   std::string output;
 
   for(long x = 0; x < 32; x += 1) {
@@ -281,8 +288,17 @@ bool is_equilibrium() {
 int main() {
   int px = 4;
   int py = 6;
+  int i = 0;
 
   brightness[c][px][py] = 8.0f;
+
+  i = 0;
+  while(i < 100) {
+    propegate_brightness();
+    brightness[c][px][py] = 8.0f;
+    i += 1;
+  }
+  print_all();
 
   using namespace std::chrono;
 
@@ -315,7 +331,7 @@ int main() {
 VALID:
 
     auto t0 = high_resolution_clock::now();
-    int i = 0;
+    i = 0;
 
     for(int x = 0; x < 32; x += 1) {
       for(int y = 0; y < 32; y += 1) {
