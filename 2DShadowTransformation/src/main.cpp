@@ -21,6 +21,21 @@ void DrawRectangleOutline(RectangleOutline rect_outline, Color color) {
   DrawLineV(rect_outline.TopLeft, rect_outline.TopRight, color); // draw last one
 }
 
+Vector2 RotateAroundPoint(Vector2 point, Vector2 origin, float angle) {
+  Vector2 Copy = {point.x - origin.x, point.y - origin.y};
+  point.x = Copy.x*cosf(angle) - Copy.y*sinf(angle);
+  point.y = Copy.y*cosf(angle) + Copy.x*sinf(angle);
+  point = {point.x + origin.x, point.y + origin.y};
+  return point;
+};
+
+Vector2 RotateAroungOrigin(Vector2 point, float angle) {
+  Vector2 Copy = point;
+  point.x = Copy.x*cosf(angle) - Copy.y*sinf(angle);
+  point.y = Copy.y*cosf(angle) + Copy.x*sinf(angle);
+  return point;
+};
+
 struct Frustum {
   float fov;
   float minz;
@@ -66,28 +81,10 @@ void DrawFrustumRotated(Frustum frustum, Color color) {
   TopRight.y = -BottomRight.y + frustum.y;
   BottomRight.y += frustum.y;
 
-  Vector2 Copy = {TopLeft.x - frustum.x, TopLeft.y - frustum.y};
-  TopLeft.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-  TopLeft.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-  TopLeft = {TopLeft.x + frustum.x, TopLeft.y + frustum.y};
-
-  //Copy = TopRight;
-  Copy = {TopRight.x - frustum.x, TopRight.y - frustum.y};
-  TopRight.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-  TopRight.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-  TopRight = {TopRight.x + frustum.x, TopRight.y + frustum.y};
-
-  //Copy = BottomRight;
-  Copy = {BottomRight.x - frustum.x, BottomRight.y - frustum.y};
-  BottomRight.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-  BottomRight.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-  BottomRight = {BottomRight.x + frustum.x, BottomRight.y + frustum.y};
-
-  //Copy = BottomLeft;
-  Copy = {BottomLeft.x - frustum.x, BottomLeft.y - frustum.y};
-  BottomLeft.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-  BottomLeft.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-  BottomLeft = {BottomLeft.x + frustum.x, BottomLeft.y + frustum.y};
+  TopLeft = RotateAroundPoint(TopLeft, {frustum.x, frustum.y}, frustum.angle);
+  TopRight = RotateAroundPoint(TopRight, {frustum.x, frustum.y}, frustum.angle);
+  BottomLeft = RotateAroundPoint(BottomLeft, {frustum.x, frustum.y}, frustum.angle);
+  BottomRight = RotateAroundPoint(BottomRight, {frustum.x, frustum.y}, frustum.angle);
 
   DrawLineV(TopLeft, TopRight, color);
   DrawLineV(TopRight, BottomRight, color);
@@ -183,38 +180,11 @@ int main() {
     }
 
     {
-      //Vector2 Copy = {100, 100};
-      //shadow.BottomRight.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      //shadow.BottomRight.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      //Copy = {-100, 100};
-      //shadow.BottomLeft.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      //shadow.BottomLeft.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      //Copy = {100, -100};
-      //shadow.TopRight.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      //shadow.TopRight.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      //Copy = {-100, -100};
-      //shadow.TopLeft.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      //shadow.TopLeft.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      //shadow.BottomRight.x += frustum.x - cosf(frustum.angle) * 100.0f;
-      //shadow.BottomRight.y += frustum.y - sinf(frustum.angle) * 100.0f;
-      //shadow.BottomLeft.x += frustum.x - cosf(frustum.angle) * 100.0f;
-      //shadow.BottomLeft.y += frustum.y - sinf(frustum.angle) * 100.0f;
-      //shadow.TopRight.x += frustum.x - cosf(frustum.angle) * 100.0f;
-      //shadow.TopRight.y += frustum.y - sinf(frustum.angle) * 100.0f;
-      //shadow.TopLeft.x += frustum.x - cosf(frustum.angle) * 100.0f;
-      //shadow.TopLeft.y += frustum.y - sinf(frustum.angle) * 100.0f;
       shadow.BottomRight = {frustum.x, frustum.y + 100};
       shadow.BottomLeft = {frustum.x - 200, frustum.y + 100};
       shadow.TopRight = {frustum.x, frustum.y - 100};
       shadow.TopLeft = {frustum.x - 200, frustum.y - 100};
     }
-
-    //shadow.x = frustum.x - 200;
-    //shadow.y = frustum.y - 100;
 
     camera.target.x = frustum.x;
     camera.target.y = frustum.y;
@@ -239,28 +209,17 @@ int main() {
       scaled_rects[i].TopLeft = Vector2Subtract(scaled_rects[i].TopLeft, {frustum.x, frustum.y});
 
       // unrotate
-      Vector2 Copy = scaled_rects[i].BottomRight;
-      scaled_rects[i].BottomRight.x = Copy.x*cosf(-frustum.angle) - Copy.y*sinf(-frustum.angle);
-      scaled_rects[i].BottomRight.y = Copy.y*cosf(-frustum.angle) + Copy.x*sinf(-frustum.angle);
-
-      Copy = scaled_rects[i].BottomLeft;
-      scaled_rects[i].BottomLeft.x = Copy.x*cosf(-frustum.angle) - Copy.y*sinf(-frustum.angle);
-      scaled_rects[i].BottomLeft.y = Copy.y*cosf(-frustum.angle) + Copy.x*sinf(-frustum.angle);
-
-      Copy = scaled_rects[i].TopRight;
-      scaled_rects[i].TopRight.x = Copy.x*cosf(-frustum.angle) - Copy.y*sinf(-frustum.angle);
-      scaled_rects[i].TopRight.y = Copy.y*cosf(-frustum.angle) + Copy.x*sinf(-frustum.angle);
-
-      Copy = scaled_rects[i].TopLeft;
-      scaled_rects[i].TopLeft.x = Copy.x*cosf(-frustum.angle) - Copy.y*sinf(-frustum.angle);
-      scaled_rects[i].TopLeft.y = Copy.y*cosf(-frustum.angle) + Copy.x*sinf(-frustum.angle);
+      scaled_rects[i].BottomRight = RotateAroungOrigin(scaled_rects[i].BottomRight, -frustum.angle);
+      scaled_rects[i].BottomLeft = RotateAroungOrigin(scaled_rects[i].BottomLeft, -frustum.angle);
+      scaled_rects[i].TopRight = RotateAroungOrigin(scaled_rects[i].TopRight, -frustum.angle);
+      scaled_rects[i].TopLeft= RotateAroungOrigin(scaled_rects[i].TopLeft, -frustum.angle);
 
       // scale
       scaled_rects[i].BottomRight.y *= FrustumXToScale(frustum, scaled_rects[i].BottomRight.x);
       scaled_rects[i].BottomLeft.y *= FrustumXToScale(frustum, scaled_rects[i].BottomLeft.x);
       scaled_rects[i].TopRight.y *= FrustumXToScale(frustum, scaled_rects[i].TopRight.x);
       scaled_rects[i].TopLeft.y *= FrustumXToScale(frustum, scaled_rects[i].TopLeft.x);
-     
+
       // retranslate
       scaled_rects[i].BottomRight = Vector2Add(scaled_rects[i].BottomRight, {frustum.x, frustum.y});
       scaled_rects[i].BottomLeft = Vector2Add(scaled_rects[i].BottomLeft, {frustum.x, frustum.y});
@@ -275,6 +234,7 @@ int main() {
 
       unscaled_rects[i] = scaled_rects[i];
 
+      // retranslate
       unscaled_rects[i].BottomRight = Vector2Subtract(unscaled_rects[i].BottomRight, {frustum.x, frustum.y});
       unscaled_rects[i].BottomLeft = Vector2Subtract(unscaled_rects[i].BottomLeft, {frustum.x, frustum.y});
       unscaled_rects[i].TopRight = Vector2Subtract(unscaled_rects[i].TopRight, {frustum.x, frustum.y});
@@ -287,21 +247,10 @@ int main() {
       unscaled_rects[i].TopLeft.y /= FrustumXToScale(frustum, unscaled_rects[i].TopLeft.x);
 
       // rerotate
-      Vector2 Copy = unscaled_rects[i].BottomRight;
-      unscaled_rects[i].BottomRight.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      unscaled_rects[i].BottomRight.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      Copy = unscaled_rects[i].BottomLeft;
-      unscaled_rects[i].BottomLeft.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      unscaled_rects[i].BottomLeft.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      Copy = unscaled_rects[i].TopRight;
-      unscaled_rects[i].TopRight.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      unscaled_rects[i].TopRight.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
-
-      Copy = unscaled_rects[i].TopLeft;
-      unscaled_rects[i].TopLeft.x = Copy.x*cosf(frustum.angle) - Copy.y*sinf(frustum.angle);
-      unscaled_rects[i].TopLeft.y = Copy.y*cosf(frustum.angle) + Copy.x*sinf(frustum.angle);
+      unscaled_rects[i].BottomRight = RotateAroungOrigin(unscaled_rects[i].BottomRight, frustum.angle);
+      unscaled_rects[i].BottomLeft = RotateAroungOrigin(unscaled_rects[i].BottomLeft, frustum.angle);
+      unscaled_rects[i].TopRight = RotateAroungOrigin(unscaled_rects[i].TopRight, frustum.angle);
+      unscaled_rects[i].TopLeft= RotateAroungOrigin(unscaled_rects[i].TopLeft, frustum.angle);
 
       // retranslate
       unscaled_rects[i].BottomRight = Vector2Add(unscaled_rects[i].BottomRight, {frustum.x, frustum.y});
