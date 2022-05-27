@@ -1,2 +1,2 @@
-# 2DShadowTransformation
-A possible approach for shadow mapping cascades without using cascades
+# 2DCellularLightingRaylib
+The 2d cellular lighting approach used in 2DCellularLighting, but implemented using raylib.
