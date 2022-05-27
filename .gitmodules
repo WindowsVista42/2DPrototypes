@@ -1,3 +1,6 @@
 [submodule "2DShadowTransformation/lib/raylib"]
 	path = 2DShadowTransformation/lib/raylib
 	url = https://github.com/raysan5/raylib
+[submodule "2DCellularLightingRaylib/lib/raylib"]
+	path = 2DCellularLightingRaylib/lib/raylib
+	url = https://github.com/raysan5/raylib
